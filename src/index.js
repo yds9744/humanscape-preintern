@@ -1,27 +1,37 @@
 const Koa = require('koa');
+const Router = require('koa-router');
+
 const app = new Koa();
+const router = new Router();
+const api = require('./api');
 
-app.use(async (ctx, next) => {
-	console.log(1);
-	const started = new Date();
-	await next();
-	console.log(new Date - started + 'ms');
-	/*(next().then(() => {
-		console.log(new Date() - started + 'ms');
-	});*/
+router.use('/api', api.routes());
+
+router.get('/', (ctx, next) => {
+	ctx.body = '홈';
 });
 
-app.use((ctx, next) => {
-	console.log(2);
-	next();
+router.get('/about',(ctx, next) => {
+	ctx.body = '소개';
 });
 
-app.use(ctx => {
-	ctx.body = 'Hello Koa';
+router.get('/about/:name', (ctx, next) => {
+	const { name } = ctx.params;
+	ctx.body = name + '의 소개';
 });
+
+router.get('/post', (ctx, next) => {
+	const { id } = ctx.request.query;
+	if(id) {
+		ctx.body = '포스트 #' + id;
+	} else {
+		ctx.body = '포스트 아이디가 없습니다.';
+	}
+});
+
+app.use(router.routes()).use(router.allowedMethods());
 
 app.listen(4000, () => {
 	console.log('jinsun server is listening to port 4000');
 });
-
 
